@@ -1,0 +1,15 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .window{
+    width:70em;
+    height: 40em;
+    background-color: red;
+  }
+}
