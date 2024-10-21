@@ -6,8 +6,23 @@ export default function useASCII3DRenderer(width: number, height: number) {
   const renderingChars = [".", ";", "o", "x", "%", "@"];
 
   useEffect(() => {
-    setFrameBuffer(Array.from(Array(width), () => Array(height).fill(".")));
+    setFrameBuffer(Array.from(Array(height), () => Array(width).fill("#")));
   }, []);
 
-  return { frameBuffer };
+
+  const convertFrameBufferToString = ()=>{
+    let resultString = "";
+
+    frameBuffer?.forEach((row) => {
+      row.forEach((char) => {
+        resultString += char;
+      });
+      resultString += "<br/>";
+    });
+
+    return resultString;
+  }
+  
+
+  return { frameBuffer, convertFrameBufferToString };
 }
