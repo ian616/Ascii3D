@@ -19,15 +19,17 @@ export default function useLoader() {
         vertices.push(math.matrix([datas[1], datas[2], datas[3]]));
       } else if (datas[0] === "f") {
         const polygon: Polygon = {
-          vertices: [
-            vertices[parseInt(datas[1]) - 1],
-            vertices[parseInt(datas[2]) - 1],
-            vertices[parseInt(datas[3]) - 1],
-          ],
+          vertices: {
+            x: vertices[parseInt(datas[1]) - 1],
+            y: vertices[parseInt(datas[2]) - 1],
+            z: vertices[parseInt(datas[3]) - 1],
+          },
         };
         polygons.push(polygon);
       }
     });
+
+    return polygons;
   };
 
   const readModelfromFile = async (modelName: string) => {

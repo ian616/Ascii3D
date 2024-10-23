@@ -1,5 +1,9 @@
-import { Matrix } from 'mathjs';
+import { Matrix } from "mathjs";
 
 export interface Polygon {
-    vertices: Matrix[];
+  vertices: {
+    x: Matrix;
+    y: Matrix;
+    z: Matrix;
+  };
 }
