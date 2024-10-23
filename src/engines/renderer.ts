@@ -1,28 +1,25 @@
-import { useEffect, useState } from "react";
-import useLoader from "./loader";
+import { useEffect, useRef, useState } from "react";
+import { create, all, Matrix } from "mathjs";
+import useObject3D from "./object3D";
 
 export default function useASCII3DRenderer(width: number, height: number) {
-  const loader = useLoader();
-  const [frameBuffer, setFrameBuffer] = useState<string[][]>();
+  
+  const frameBuffer = useRef<string[][]>();
+  const object3D = useObject3D();
 
   const renderingChars = [".", ";", "o", "x", "%", "@"];
 
-  useEffect(() => {
-    setFrameBuffer(Array.from(Array(height), () => Array(width).fill("#")));
-    initializeObject3D();
-  }, []);
+  const math = create(all);
 
-  const initializeObject3D = async ()=>{
-    const polygons = await loader.parseObjtoPolygons();
-    polygons.forEach((polygon)=>{
-      
-    });
-  };
+  useEffect(() => {
+    frameBuffer.current = Array.from(Array(height), () => Array(width).fill("#"));
+    console.log(object3D.transform(math.matrix([1, 1, 1])));
+  }, []);
 
   const convertFrameBufferToString = ()=>{
     let resultString = "";
 
-    frameBuffer?.forEach((row) => {
+    frameBuffer.current?.forEach((row) => {
       row.forEach((char) => {
         resultString += char;
       });
