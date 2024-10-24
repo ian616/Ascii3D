@@ -1,11 +1,14 @@
 import { create, all, Matrix } from "mathjs";
 import useLoader from "./loader";
+import useCamera from "./camera";
 import type { Polygon } from "../model/polygon";
 import { useEffect, useRef, useState } from "react";
 
 export default function useObject3D() {
   const math = create(all);
   const loader = useLoader();
+
+  
 
   const [mesh, setMesh] = useState<Polygon[]>([]);
   const [position, setPosition] = useState<Matrix>(math.matrix([0, 0, 0])); // position vector
@@ -19,7 +22,8 @@ export default function useObject3D() {
   }, []);
 
   // z->y->x rotation 먼저 적용후 transition 적용하는 순서 지켜야함
-  const transform = (vertex: Matrix) => {
+  const worldTransform = (vertex: Matrix) => {
+    
     const theta = rotation.map((angle) =>
       math.unit(angle, "deg").toNumber("rad")
     );
@@ -73,5 +77,5 @@ export default function useObject3D() {
     ]);
   };
 
-  return { mesh, position, rotation, transform };
+  return { mesh, position, rotation, worldTransform };
 }
