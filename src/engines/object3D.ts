@@ -31,7 +31,7 @@ export default function useObject3D() {
     const step3 = math.multiply(step2, translate);
     const step4 = math.multiply(step3, convertToHomogenius(vertex));
     
-    return step4;
+    return step4; // vector 형태가 아니라 homogenius matrix형태로 반환
   };
 
   // to use homogenius matrix, add additional dimension to vector and make into column vector
