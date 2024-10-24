@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { create, all, Matrix } from "mathjs";
 import useObject3D from "./object3D";
+import { Polygon } from "../model/polygon";
 
 export default function useASCII3DRenderer(width: number, height: number) {
-  const frameBuffer = useRef<string[][]>();
+  const [frameBuffer, setFrameBuffer] = useState<string[][]>();
   const object3D = useObject3D();
 
   const renderingChars = [".", ";", "o", "x", "%", "@"];
@@ -11,14 +12,23 @@ export default function useASCII3DRenderer(width: number, height: number) {
   const math = create(all);
 
   useEffect(() => {
-    frameBuffer.current = Array.from(Array(height), () =>
-      Array(width).fill("_")
-    );
-
-    const transformedVertex = object3D.transform(math.matrix([2, 6, 7]));
-    console.log(transformedVertex);
-    projectTo2D(transformedVertex);
+    setFrameBuffer(Array.from(Array(height), () => Array(width).fill("_")));
   }, []);
+
+  useEffect(() => {
+    console.log(object3D.mesh);
+    object3D.mesh.forEach((polygon: Polygon) => {
+      const transformedVertex1 = object3D.transform(polygon.vertices.x);
+      console.log(transformedVertex1);
+      projectTo2D(transformedVertex1);
+      const transformedVertex2 = object3D.transform(polygon.vertices.y);
+      console.log(transformedVertex2);
+      projectTo2D(transformedVertex2);
+      const transformedVertex3 = object3D.transform(polygon.vertices.z);
+      console.log(transformedVertex3);
+      projectTo2D(transformedVertex3);
+    });
+  }, [object3D.mesh]);
 
   const projectTo2D = (vertex: Matrix) => {
     const FOV_DEGREE = 60;
@@ -46,17 +56,25 @@ export default function useASCII3DRenderer(width: number, height: number) {
     const screenX = (normalizedX2D + 1) * (width / 2);
     const screenY = (1 - normalizedY2D) * (height / 2); // Y축 반전
 
-    // console.log(screenX, screenY);
-    if (frameBuffer.current) {
+    if (frameBuffer) {
       console.log(math.floor(screenX), math.floor(screenY));
-      frameBuffer.current[math.floor(screenY)][math.floor(screenX)] = "*";
+      // check if index is inside the size of window
+      if (0 <= screenX && screenX < width && 0 <= screenY && screenY < height) {
+        setFrameBuffer((prevBuffer) => {
+          const newGrid = prevBuffer?.map((row) => [...row]);
+          if (newGrid) {
+            newGrid[math.floor(screenY)][math.floor(screenX)] = "*";
+          }
+          return newGrid;
+        });
+      }
     }
   };
 
   const convertFrameBufferToString = () => {
     let resultString = "";
 
-    frameBuffer.current?.forEach((row) => {
+    frameBuffer?.forEach((row) => {
       row.forEach((char) => {
         resultString += char;
       });
