@@ -8,11 +8,10 @@ export default function useObject3D() {
   const math = create(all);
   const loader = useLoader();
 
-  
-
   const [mesh, setMesh] = useState<Polygon[]>([]);
-  const [position, setPosition] = useState<Matrix>(math.matrix([0, 0, 0])); // position vector
+  const [position, setPosition] = useState<Matrix>(math.matrix([0, 0, 20])); // position vector
   const [rotation, setRotation] = useState<Matrix>(math.matrix([0, 0, 0])); // rotation angle for x, y, z axis
+  const [scale, setScale] = useState<Matrix>(math.matrix([1, 1, 1]));
 
   useEffect(() => {
     const wrapper = async () => {
@@ -21,7 +20,7 @@ export default function useObject3D() {
     wrapper();
   }, []);
 
-  // z->y->x rotation 먼저 적용후 transition 적용하는 순서 지켜야함
+  // z->y->x rotation 후 scale transition 후 translation 적용하는 순서 지켜야함
   const worldTransform = (vertex: Matrix) => {
     
     const theta = rotation.map((angle) =>
@@ -77,5 +76,12 @@ export default function useObject3D() {
     ]);
   };
 
-  return { mesh, position, rotation, worldTransform };
+  const applyScale= math.matrix([
+    [scale.get([0]), 0, 0, 0],
+    [0, scale.get([1]), 0, 0],
+    [0, 0, scale.get([2]), 0],
+    [0, 0, 0, 1],
+  ]);
+
+  return { mesh, position, rotation, setPosition, setRotation, worldTransform };
 }
