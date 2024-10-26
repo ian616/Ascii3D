@@ -22,19 +22,20 @@ export default function useObject3D() {
 
   // z->y->x rotation 후 scale transition 후 translation 적용하는 순서 지켜야함
   const worldTransform = (vertex: Matrix) => {
-    
     const theta = rotation.map((angle) =>
       math.unit(angle, "deg").toNumber("rad")
     );
+    
     const step1 = math.multiply(
       rotateZ(theta.get([2])),
       rotateY(theta.get([1]))
     );
     const step2 = math.multiply(step1, rotateX(theta.get([0])));
-    const step3 = math.multiply(step2, translate);
-    const step4 = math.multiply(step3, convertToHomogenius(vertex));
+    const step3 = math.multiply(step2, applyScale);
+    const step4 = math.multiply(translate, step3);
+    const step5 = math.multiply(step4, convertToHomogenius(vertex));
 
-    return step4; // vector 형태가 아니라 homogenius matrix형태로 반환
+    return step5; // homogenius matrix 형태로 반환
   };
 
   // to use homogenius matrix, add additional dimension to vector and make into column vector
@@ -76,12 +77,12 @@ export default function useObject3D() {
     ]);
   };
 
-  const applyScale= math.matrix([
+  const applyScale = math.matrix([
     [scale.get([0]), 0, 0, 0],
     [0, scale.get([1]), 0, 0],
     [0, 0, scale.get([2]), 0],
     [0, 0, 0, 1],
   ]);
 
-  return { mesh, position, rotation, setPosition, setRotation, worldTransform };
+  return { mesh, position, rotation, scale, setPosition, setRotation, setScale, worldTransform };
 }
