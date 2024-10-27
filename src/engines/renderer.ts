@@ -10,6 +10,7 @@ import useProjection from "./projection";
 export default function useASCII3DRenderer(width: number, height: number) {
   const math = create(all);
   const [frameBuffer, setFrameBuffer] = useState<string[][]>(Array.from(Array(height), () => Array(width).fill("_")));
+  const [actualFPS, setActualFPS] = useState(0);
 
   const fps = 60;
   const object3D = useObject3D();
@@ -36,7 +37,7 @@ export default function useASCII3DRenderer(width: number, height: number) {
     object3D.setRotation((prev) =>
       prev.map((value, index) => {
         if (index[0] === 1) {
-          return value - 3;
+          return value - 4;
         } else if (index[0] === 0) {
           return value - 0.2;
         }
@@ -45,24 +46,22 @@ export default function useASCII3DRenderer(width: number, height: number) {
     );
   };
 
-  const projectToScreen = (viewTransformedVertex: Matrix) => {
-    const projectedVertex = projection.projectionTransform(viewTransformedVertex);
+  const projectToScreen = (projectedVertex: Matrix) => {
+    const w = projectedVertex.get([3, 0]);
+    const normalizedX2D = projectedVertex.get([0, 0]) / w;
+    const normalizedY2D = projectedVertex.get([1, 0]) / w;
 
-    if (0 <= screenX && screenX < width && 0 <= screenY && screenY < height) {
-      const w = projectedVertex.get([3, 0]);
-      const normalizedX2D = projectedVertex.get([0, 0]) / w;
-      const normalizedY2D = projectedVertex.get([1, 0]) / w;
+    const screenX = (normalizedX2D + 1) * (width / 2);
+    const screenY = (1 - normalizedY2D) * (height / 2); // Y축 반전
 
-      const screenX = (normalizedX2D + 1) * (width / 2);
-      const screenY = (1 - normalizedY2D) * (height / 2); // Y축 반전
-
-      return math.matrix([screenX, screenY]);
-    }
+    return math.matrix([screenX, screenY]);
   };
 
   const processRender = () => {
-    const newBuffer = Array.from(Array(height), () => Array(width).fill("_"));
-    const shadeASCII = [".", ";", "o", "x", "#", "%", "@"];
+    const frameBuffer = Array.from(Array(height), () => Array(width).fill("_"));
+    const depthBuffer = Array.from(Array(height), () => Array(width).fill(100)); // 초기값은 far plane으로 설정
+
+    const shadeASCII = ".;ox#%@";
 
     const sign = (v1: Matrix, v2: Matrix, v3: Matrix) => {
       return (
@@ -106,7 +105,13 @@ export default function useASCII3DRenderer(width: number, height: number) {
         viewTransformedVerticies[2]
       );
 
-      const screenVerticies: Matrix[] = viewTransformedVerticies
+      const projectedVerticies: Matrix[] = viewTransformedVerticies
+        .map((vertex) => {
+          return projection.projectionTransform(vertex);
+        })
+        .filter((vertex): vertex is Matrix => vertex !== undefined);
+
+      const screenVerticies: Matrix[] = projectedVerticies
         .map((vertex) => {
           return projectToScreen(vertex);
         })
@@ -117,14 +122,32 @@ export default function useASCII3DRenderer(width: number, height: number) {
       for (let y = Math.max(0, Math.floor(bbox.minY)); y <= Math.min(height - 1, Math.floor(bbox.maxY)); y++) {
         for (let x = Math.max(0, Math.floor(bbox.minX)); x <= Math.min(width - 1, Math.floor(bbox.maxX)); x++) {
           if (isVertexInTriangle(math.matrix([x, y]), screenVerticies[0], screenVerticies[1], screenVerticies[2])) {
-            const currentShade = shadeASCII[Math.round(brightness * (shadeASCII.length - 1))];
-            newBuffer[y][x] = currentShade;
+            // 각 벡터의 w 값의 평균으로 깊이 구함
+            const currentDepth =
+              (projectedVerticies[0].get([3, 0]) +
+                projectedVerticies[1].get([3, 0]) +
+                projectedVerticies[2].get([3, 0])) /
+              3;
+            if (currentDepth < depthBuffer[y][x]) {
+              const currentShade = shadeASCII[Math.round(brightness * (shadeASCII.length - 1))];
+              frameBuffer[y][x] = currentShade;
+              depthBuffer[y][x] = currentDepth;
+            }
           }
+        }
+      }
+
+      // 화면에 FPS 표시
+      const fpsString = `FPS: ${actualFPS}`;
+
+      for (let i = 0; i < fpsString.length; i++) {
+        if (i < width) {
+          frameBuffer[0][i] = fpsString[i];
         }
       }
     });
 
-    setFrameBuffer(newBuffer);
+    setFrameBuffer(frameBuffer);
   };
 
   const animate = (time: number) => {
@@ -135,6 +158,8 @@ export default function useASCII3DRenderer(width: number, height: number) {
       previousTimeRef.current = time;
       updatePosition();
       processRender();
+      const currentFPS = Math.round(1000 / deltaTime);
+      setActualFPS(currentFPS);
     }
 
     requestRef.current = requestAnimationFrame(animate);

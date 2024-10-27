@@ -9,7 +9,7 @@ export default function useObject3D() {
   const loader = useLoader();
 
   const [mesh, setMesh] = useState<Polygon[]>([]);
-  const [position, setPosition] = useState<Matrix>(math.matrix([0, 0, 20])); // position vector
+  const [position, setPosition] = useState<Matrix>(math.matrix([0, 0, 15])); // position vector
   const [rotation, setRotation] = useState<Matrix>(math.matrix([0, 0, 0])); // rotation angle for x, y, z axis
   const [scale, setScale] = useState<Matrix>(math.matrix([1, 1, 1]));
 
