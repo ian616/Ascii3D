@@ -1,8 +1,7 @@
 import { create, all, Matrix } from "mathjs";
 import useLoader from "./loader";
-import useCamera from "./camera";
-import type { Polygon } from "../model/polygon";
-import { useEffect, useRef, useState } from "react";
+import type { Polygon } from "../../model/polygon";
+import { useEffect, useState } from "react";
 
 export default function useObject3D() {
   const math = create(all);
@@ -11,7 +10,7 @@ export default function useObject3D() {
   const [mesh, setMesh] = useState<Polygon[]>([]);
   const [position, setPosition] = useState<Matrix>(math.matrix([0, 0, 15])); // position vector
   const [rotation, setRotation] = useState<Matrix>(math.matrix([0, 0, 0])); // rotation angle for x, y, z axis
-  const [scale, setScale] = useState<Matrix>(math.matrix([1, 1, 1]));
+  const [scale, setScale] = useState<Matrix>(math.matrix([3, 3, 3]));
 
   useEffect(() => {
     const wrapper = async () => {

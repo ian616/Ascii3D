@@ -1,7 +1,6 @@
 import { create, all, Matrix } from "mathjs";
-import useLoader from "./loader";
-import type { Polygon } from "../model/polygon";
 import { useEffect, useRef, useState } from "react";
+import { toF32 } from "../../utils/math";
 
 export default function useCamera() {
   const math = create(all);
@@ -15,7 +14,7 @@ export default function useCamera() {
   const [look, setLook] = useState<Matrix>(normalize(math.matrix([0, 0, 1]))); // 바라보는 방향
   const [up, setUp] = useState<Matrix>(normalize(math.matrix([0, 1, 0]))); // 업 벡터
 
-  const viewTransform = (vertex: Matrix) => {
+  const viewTransform = () => {
     const zAxis = normalize(math.matrix(math.subtract(eye, look))); // 카메라 방향
     const xAxis = normalize(math.matrix(math.cross(up, zAxis))); // 오른쪽 벡터
     const yAxis = math.matrix(math.cross(zAxis, xAxis)); // 수직 벡터
@@ -28,7 +27,7 @@ export default function useCamera() {
       [-math.dot(xAxis, eye), -math.dot(yAxis, eye), -math.dot(zAxis, eye), 1],
     ]);
 
-    return math.multiply(viewMatrix, vertex);
+    return toF32(math.transpose(viewMatrix))
   };
 
   return { viewTransform, setEye, setLook, setUp };

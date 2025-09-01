@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import type { Polygon } from "../model/polygon";
+import type { Polygon } from "../../model/polygon";
 
 import { create, all, Matrix } from "mathjs";
 
@@ -7,7 +6,7 @@ export default function useLoader() {
   const math = create(all);
 
   const parseObjtoPolygons = async () => {
-    const ObjString: string = await readModelfromFile("cube");
+    const ObjString: string = await readModelfromFile("donut");
 
     const vertices: Matrix[] = [];
     const polygons: Polygon[] = [];

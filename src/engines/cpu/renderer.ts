@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { create, all, Matrix } from "mathjs";
-import type { Polygon } from "../model/polygon";
+import type { Polygon } from "../../model/polygon";
 
 import useObject3D from "./object3D";
 import useCamera from "./camera";

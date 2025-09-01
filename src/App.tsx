@@ -1,25 +1,46 @@
-import { useEffect, useState, useRef } from "react";
-import useASCII3DRenderer from "../src/engines/renderer";
+import { useEffect, useRef, useState } from "react";
+import useASCII3DRenderer from "../src/engines/cpu/renderer";
+import useWebGPUASCII3DRenderer from "../src/engines/webGPU/renderer";
 import "./App.scss";
 
-//http://www.mathforengineers.com/math-calculators/3D-point-rotation-calculator.html 여기서 결과비교
-// TODO: 회전변환 완료 된 점을 그리는 rasterizing 함수 구현하기
 function App() {
-  const { frameBuffer, convertFrameBufferToString } = useASCII3DRenderer(120, 50);
+    /** webGPU setting part*/
+    const [device, setDevice] = useState<GPUDevice | null>(null);
+    useEffect(() => {
+        (async () => {
+            if (!navigator.gpu) {
+                console.error("WebGPU is not supported in this browser.");
+                return;
+            }
 
-  const renderWindowRef = useRef<HTMLDivElement>(null);
+            const adapter = await navigator.gpu.requestAdapter();
+            if (!adapter) {
+                console.error("Failed to get GPU adapter.");
+                return;
+            }
 
-  useEffect(() => {
-    if (renderWindowRef.current) {
-      renderWindowRef.current.innerHTML = convertFrameBufferToString();
-    }
-  }, [frameBuffer]);
-  
-  return (
-    <>
-      <div className="window" ref={renderWindowRef}></div>
-    </>
-  );
+            const dev = await adapter.requestDevice();
+            setDevice(dev);
+        })();
+    }, []);
+
+    // const { frameBuffer, convertFrameBufferToString } = useASCII3DRenderer(120, 50);
+    const { frameBuffer, convertFrameBufferToString } =
+        useWebGPUASCII3DRenderer(device!, 120, 50);
+
+    const renderWindowRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (renderWindowRef.current) {
+            renderWindowRef.current.innerHTML = convertFrameBufferToString();
+        }
+    }, [frameBuffer]);
+
+    return (
+        <>
+            <div className="window" ref={renderWindowRef}></div>
+        </>
+    );
 }
 
 export default App;

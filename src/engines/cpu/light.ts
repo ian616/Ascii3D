@@ -1,5 +1,4 @@
 import { create, all, Matrix } from "mathjs";
-import type { Polygon } from "../model/polygon";
 import { useEffect, useRef, useState } from "react";
 
 export default function useLight() {
